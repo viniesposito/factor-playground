@@ -21,7 +21,7 @@ app.layout = html.Div(children=[
     html.H1(children='Factor Playground'),
 
     html.Div(children='''
-        Visualize how your favorite stock or fund's returns can be decomposed into risk factors.
+        Visualize how your favorite stock's returns can be decomposed into risk factors.
     '''),
 
     html.Br(),
@@ -29,18 +29,21 @@ app.layout = html.Div(children=[
     html.Div(["Enter a ticker: ",
               dcc.Dropdown(
                   id='ticker-dropdown',
-                  options=[
+                  options=[  # todo: add automatic labels
                       {'label': 'MSFT', 'value': 'MSFT'},
                       {'label': 'AAPL', 'value': 'AAPL'},
                       {'label': 'TSLA', 'value': 'TSLA'}
                   ],
                   value='TSLA'
-              )]),
+              )]
+             ),
 
-    html.Br(),
-
-    dcc.Graph(
-        id='whole-sample-factor-loadings'
+    dcc.Loading(
+        id="loading-1",
+        type="default",
+        children=html.Div(dcc.Graph(
+            id='whole-sample-factor-loadings'
+        ))
     ),
 
     html.Br(),
@@ -56,9 +59,14 @@ app.layout = html.Div(children=[
               )]
              ),
 
-    dcc.Graph(
-        id='rolling-factor-loadings'
-    )
+    dcc.Loading(
+        id="loading-2",
+        type="default",
+        children=html.Div(dcc.Graph(
+            id='rolling-factor-loadings'
+        )
+        ))
+
 ])
 
 
@@ -81,7 +89,20 @@ def update_graph(ticker):
         title = f"Factor loadings for {data.get('fund_name')} - Whole sample from {data.get('min_year').strftime('%Y')} to {data.get('max_year').strftime('%Y')}"
 
         fig = px.bar(
-            df, x='index', y='params', title=title
+            df, x='index', y='params',
+            labels={
+                'index': '',
+                'params': 'Factor loading'
+            }
+        )
+
+        fig.update_layout(title={
+            'text': title,
+            'y': 0.95,
+            'x': 0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'
+        }
         )
 
         return fig
@@ -107,7 +128,21 @@ def update_rolling_factors(ticker, window):
 
         title = f"Factor loadings over time for {data.get('fund_name')} over a {window} days window"
 
-        fig = px.line(df, x='index', y='value', color='variable', title=title)
+        fig = px.line(df, x='index', y='value', color='variable',
+                      labels={
+                          'index': '',
+                          'value': 'Factor loading',
+                            'variable': 'Factors'
+                      })
+
+        fig.update_layout(title={
+            'text': title,
+            'y': 0.95,
+            'x': 0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'
+        }
+        )
 
         return fig
 

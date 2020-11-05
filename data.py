@@ -43,7 +43,7 @@ def get_stock_returns(tickers):
     df.to_csv('stocks.csv')
 
 
-stocks = 'tsla msft aapl'
+stocks = 'tsla msft aapl ttek blk c ko gm'
 
 get_factor_data()
 get_stock_returns(stocks)
