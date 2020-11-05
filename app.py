@@ -1,4 +1,5 @@
 from models import get_whole_sample_factor_loadings, get_rolling_factor_loadings
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -9,7 +10,6 @@ import plotly.express as px
 import pandas as pd
 
 from data import ticker_list
-# ticker_list = 'tsla msft aapl ttek blk c ko gm'
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -28,14 +28,15 @@ app.layout = html.Div(children=[
 
     html.Br(),
 
-    html.Div(["Enter a ticker: ",
+    html.Div(["Choose a ticker: ",
               dcc.Dropdown(
                   id='ticker-dropdown',
                   options=[{'label': val, 'value': val}
                            for val in ticker_list.upper().split()],
                   value='TSLA'
-              )]
-             ),
+              )], style={'width': '15%'}),
+
+    html.Br(),
 
     dcc.Loading(
         id="loading-1",
@@ -66,7 +67,9 @@ app.layout = html.Div(children=[
         )
         ))
 
-])
+],
+    style={'width': '70%', 'margin': 'auto'}
+)
 
 
 @ app.callback(

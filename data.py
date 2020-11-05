@@ -1,4 +1,5 @@
 import pandas as pd
+import pickle
 
 import yfinance as yf
 
@@ -43,8 +44,28 @@ def get_stock_returns(tickers):
     df.to_csv('stocks.csv')
 
 
+def get_stock_metadata(tickers):
+
+    temp = yf.Tickers(tickers).tickers
+
+    out = {}
+
+    for ticker in temp:
+
+        out[ticker.ticker] = ticker.info
+
+    filename = 'stock_metadata'
+
+    outfile = open(filename, 'wb')
+
+    pickle.dump(out, outfile)
+
+    outfile.close()
+
+
 ticker_list = 'tsla msft aapl ttek blk c ko gm'
 
 if __name__ == '__main__':
     get_factor_data()
     get_stock_returns(ticker_list)
+    get_stock_metadata(ticker_list)

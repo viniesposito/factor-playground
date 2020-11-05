@@ -1,7 +1,5 @@
 import pandas as pd
-
-import yfinance as yf
-
+import pickle
 
 import statsmodels.api as sm
 from statsmodels.regression.rolling import RollingOLS
@@ -11,6 +9,17 @@ def get_stock_return(ticker):
 
     return pd.read_csv('stocks.csv', parse_dates=[
         0], index_col=[0])[[ticker]].dropna()
+
+
+def get_stock_long_name(ticker):
+
+    infile = open('stock_metadata', 'rb')
+
+    data = pickle.load(infile)
+
+    infile.close()
+
+    return data.get(ticker).get('longName')
 
 
 def prep_data_for_regression(ticker, stock):
@@ -49,7 +58,7 @@ def get_whole_sample_factor_loadings(ticker):
         min_year = min(df.index)
         max_year = max(df.index)
 
-        fund_name = yf.Ticker(ticker).info.get('longName')
+        fund_name = get_stock_long_name(ticker)
 
         out = {
             'factor_loadings': factor_loadings,
@@ -80,7 +89,7 @@ def get_rolling_factor_loadings(ticker, rolling_window):
         rolling_factor_loadings = pd.melt(
             rolling_factor_loadings, id_vars=['index'])
 
-        fund_name = yf.Ticker(ticker).info.get('longName')
+        fund_name = get_stock_long_name(ticker)
 
         out = {
             'rolling_factor_loadings': rolling_factor_loadings,
