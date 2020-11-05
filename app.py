@@ -1,3 +1,4 @@
+from models import get_whole_sample_factor_loadings, get_rolling_factor_loadings
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -7,7 +8,8 @@ import plotly.express as px
 
 import pandas as pd
 
-from models import get_whole_sample_factor_loadings, get_rolling_factor_loadings
+from data import ticker_list
+# ticker_list = 'tsla msft aapl ttek blk c ko gm'
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -29,11 +31,8 @@ app.layout = html.Div(children=[
     html.Div(["Enter a ticker: ",
               dcc.Dropdown(
                   id='ticker-dropdown',
-                  options=[  # todo: add automatic labels
-                      {'label': 'MSFT', 'value': 'MSFT'},
-                      {'label': 'AAPL', 'value': 'AAPL'},
-                      {'label': 'TSLA', 'value': 'TSLA'}
-                  ],
+                  options=[{'label': val, 'value': val}
+                           for val in ticker_list.upper().split()],
                   value='TSLA'
               )]
              ),
@@ -132,7 +131,7 @@ def update_rolling_factors(ticker, window):
                       labels={
                           'index': '',
                           'value': 'Factor loading',
-                            'variable': 'Factors'
+                          'variable': 'Factors'
                       })
 
         fig.update_layout(title={
