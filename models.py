@@ -2,20 +2,22 @@ import pandas as pd
 
 import yfinance as yf
 
+
 import statsmodels.api as sm
 from statsmodels.regression.rolling import RollingOLS
 
 
 def get_stock_return(ticker):
 
-    df = yf.Ticker(ticker).history(period="max")[['Close']].pct_change()
+    return pd.read_csv('stocks.csv', parse_dates=[
+        0], index_col=[0])[[ticker]].dropna()
 
-    return df.dropna().rename(columns={'Close': ticker})
 
-
-def prep_data_for_regression(ticker, returns):
+def prep_data_for_regression(ticker, stock):
 
     df = pd.read_csv('factors.csv', parse_dates=[0], index_col=[0])
+
+    returns = get_stock_return(ticker)
 
     df = df.join(returns, how='inner')
 

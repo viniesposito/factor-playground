@@ -27,8 +27,15 @@ app.layout = html.Div(children=[
     html.Br(),
 
     html.Div(["Enter a ticker: ",
-              dcc.Input(id='my-input', value='TSLA', type='text')]
-             ),
+              dcc.Dropdown(
+                  id='ticker-dropdown',
+                  options=[
+                      {'label': 'MSFT', 'value': 'MSFT'},
+                      {'label': 'AAPL', 'value': 'AAPL'},
+                      {'label': 'TSLA', 'value': 'TSLA'}
+                  ],
+                  value='TSLA'
+              )]),
 
     html.Br(),
 
@@ -57,7 +64,7 @@ app.layout = html.Div(children=[
 
 @ app.callback(
     Output('whole-sample-factor-loadings', 'figure'),
-    [Input('my-input', 'value')]
+    [Input('ticker-dropdown', 'value')]
 )
 def update_graph(ticker):
 
@@ -82,7 +89,7 @@ def update_graph(ticker):
 
 @ app.callback(
     Output('rolling-factor-loadings', 'figure'),
-    [Input('my-input', 'value'),
+    [Input('ticker-dropdown', 'value'),
      Input('rolling-window-slider', 'value')
      ]
 )
@@ -106,4 +113,5 @@ def update_rolling_factors(ticker, window):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    # app.run_server(debug=True)
+    app.run_server()
