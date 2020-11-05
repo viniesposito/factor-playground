@@ -4,6 +4,8 @@ import pickle
 import statsmodels.api as sm
 from statsmodels.regression.rolling import RollingOLS
 
+from data import ticker_list
+
 
 def get_stock_return(ticker):
 
@@ -35,65 +37,60 @@ def prep_data_for_regression(ticker, stock):
 
     Y = df[ticker] - df['RF']
 
-    return Y, X, df
+    return Y, X
 
 
 def get_whole_sample_factor_loadings(ticker):
 
     returns = get_stock_return(ticker)
 
-    if returns.empty:
+    Y, X = prep_data_for_regression(ticker, returns)
 
-        out = -1
+    model = sm.OLS(Y, X).fit(cov_type='HAC', cov_kwds={'maxlags': 1})
 
-    else:
+    factor_loadings = pd.DataFrame(model.params).reset_index()
+    factor_loadings.columns = ['index', 'params']
+    factor_loadings['ticker'] = ticker
+    factor_loadings['min_year'] = min(X.index)
+    factor_loadings['max_year'] = max(X.index)
 
-        Y, X, df = prep_data_for_regression(ticker, returns)
+    return factor_loadings
 
-        model = sm.OLS(Y, X).fit(cov_type='HAC', cov_kwds={'maxlags': 1})
 
-        factor_loadings = pd.DataFrame(model.params).reset_index()
-        factor_loadings.columns = ['index', 'params']
+def run_whole_sample_regressions(ticker_list):
 
-        min_year = min(df.index)
-        max_year = max(df.index)
+    tickers = ticker_list.upper().split()
 
-        fund_name = get_stock_long_name(ticker)
+    out_df = pd.DataFrame(columns=['a', 'b', 'c', 'd', 'e'])
 
-        out = {
-            'factor_loadings': factor_loadings,
-            'min_year': min_year,
-            'max_year': max_year,
-            'fund_name': fund_name
-        }
+    for ticker in tickers:
 
-    return out
+        data = get_whole_sample_factor_loadings(ticker)
+
+        if out_df.empty:
+
+            out_df.columns = data.columns
+
+        out_df = pd.concat([out_df, data])
+
+    out_df.to_csv('whole_sample_regressions_output.csv')
 
 
 def get_rolling_factor_loadings(ticker, rolling_window):
 
     returns = get_stock_return(ticker)
 
-    if returns.empty:
+    Y, X = prep_data_for_regression(ticker, returns)
 
-        out = -1
+    rollingmodel = RollingOLS(Y, X, window=rolling_window).fit(
+        cov_type='HAC', cov_kwds={'maxlags': 1})
 
-    else:
+    rolling_factor_loadings = rollingmodel.params.reset_index().dropna()
+    rolling_factor_loadings = pd.melt(
+        rolling_factor_loadings, id_vars=['index'])
 
-        Y, X, _ = prep_data_for_regression(ticker, returns)
+    return rolling_factor_loadings
 
-        rollingmodel = RollingOLS(Y, X, window=rolling_window).fit(
-            cov_type='HAC', cov_kwds={'maxlags': 1})
 
-        rolling_factor_loadings = rollingmodel.params.reset_index().dropna()
-        rolling_factor_loadings = pd.melt(
-            rolling_factor_loadings, id_vars=['index'])
-
-        fund_name = get_stock_long_name(ticker)
-
-        out = {
-            'rolling_factor_loadings': rolling_factor_loadings,
-            'fund_name': fund_name
-        }
-
-    return out
+if __name__ == '__main__':
+    run_whole_sample_regressions(ticker_list)

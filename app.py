@@ -1,4 +1,4 @@
-from models import get_whole_sample_factor_loadings, get_rolling_factor_loadings
+from models import get_stock_long_name, get_whole_sample_factor_loadings, get_rolling_factor_loadings
 
 import dash
 import dash_core_components as dcc
@@ -78,36 +78,40 @@ app.layout = html.Div(children=[
 )
 def update_graph(ticker):
 
-    data = get_whole_sample_factor_loadings(ticker)
+    df = pd.read_csv('whole_sample_regressions_output.csv', index_col=[0])
 
-    if data == -1:
+    df = df[df['ticker'] == ticker].drop('ticker', axis=1)
 
-        raise PreventUpdate
+    min_year = df['min_year']
+    min_year = min_year.unique()[0][:4]
 
-    else:
+    max_year = df['max_year']
+    max_year = max_year.unique()[0][:4]
 
-        df = data.get('factor_loadings')
+    df.drop(['min_year', 'max_year'], axis=1, inplace=True)
 
-        title = f"Factor loadings for {data.get('fund_name')} - Whole sample from {data.get('min_year').strftime('%Y')} to {data.get('max_year').strftime('%Y')}"
+    fund_name = get_stock_long_name(ticker)
 
-        fig = px.bar(
-            df, x='index', y='params',
-            labels={
-                'index': '',
-                'params': 'Factor loading'
-            }
-        )
+    title = f"Factor loadings for {fund_name} - Whole sample from {min_year} to {max_year}"
 
-        fig.update_layout(title={
-            'text': title,
-            'y': 0.95,
-            'x': 0.5,
-            'xanchor': 'center',
-            'yanchor': 'top'
+    fig = px.bar(
+        df, x='index', y='params',
+        labels={
+            'index': '',
+            'params': 'Factor loading'
         }
-        )
+    )
 
-        return fig
+    fig.update_layout(title={
+        'text': title,
+        'y': 0.95,
+        'x': 0.5,
+        'xanchor': 'center',
+        'yanchor': 'top'
+    }
+    )
+
+    return fig
 
 
 @ app.callback(
@@ -150,5 +154,5 @@ def update_rolling_factors(ticker, window):
 
 
 if __name__ == '__main__':
-    # app.run_server(debug=True)
-    app.run_server()
+    app.run_server(debug=True)
+    # app.run_server()
