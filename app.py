@@ -10,6 +10,7 @@ import plotly.express as px
 import pandas as pd
 
 from data import ticker_list
+from models import rolling_window_list
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -51,12 +52,12 @@ app.layout = html.Div(children=[
     html.Div(["Choose an estimation window (business days): ",
               dcc.Slider(
                   id='rolling-window-slider',
-                  min=60,
-                  max=720,
-                  value=240,
-                  marks={i: str(i) for i in range(60, 750, 30)},
+                  min=min(rolling_window_list),
+                  max=max(rolling_window_list),
+                  value=rolling_window_list[int(len(rolling_window_list)/2)],
+                  marks={i: str(i) for i in rolling_window_list},
                   step=None
-              )]
+              )], style={'width': '40%'}
              ),
 
     dcc.Loading(
@@ -122,35 +123,33 @@ def update_graph(ticker):
 )
 def update_rolling_factors(ticker, window):
 
-    data = get_rolling_factor_loadings(ticker, window)
+    df = pd.read_csv('rolling_regressions_output.csv', index_col=[0])
 
-    if data == -1:
+    condition = (df['ticker'] == ticker) & (df['window_size'] == window)
 
-        raise PreventUpdate
+    df = df[condition].drop(['ticker', 'window_size'], axis=1)
 
-    else:
+    fund_name = get_stock_long_name(ticker)
 
-        df = data.get('rolling_factor_loadings')
+    title = f"Factor loadings over time for {fund_name} over a {window} days window"
 
-        title = f"Factor loadings over time for {data.get('fund_name')} over a {window} days window"
+    fig = px.line(df, x='index', y='value', color='variable',
+                  labels={
+                        'index': '',
+                        'value': 'Factor loading',
+                        'variable': 'Factors'
+                  })
 
-        fig = px.line(df, x='index', y='value', color='variable',
-                      labels={
-                          'index': '',
-                          'value': 'Factor loading',
-                          'variable': 'Factors'
-                      })
+    fig.update_layout(title={
+        'text': title,
+        'y': 0.95,
+        'x': 0.5,
+        'xanchor': 'center',
+        'yanchor': 'top'
+    }
+    )
 
-        fig.update_layout(title={
-            'text': title,
-            'y': 0.95,
-            'x': 0.5,
-            'xanchor': 'center',
-            'yanchor': 'top'
-        }
-        )
-
-        return fig
+    return fig
 
 
 if __name__ == '__main__':

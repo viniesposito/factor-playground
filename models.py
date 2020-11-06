@@ -89,8 +89,34 @@ def get_rolling_factor_loadings(ticker, rolling_window):
     rolling_factor_loadings = pd.melt(
         rolling_factor_loadings, id_vars=['index'])
 
+    rolling_factor_loadings['ticker'] = ticker
+    rolling_factor_loadings['window_size'] = rolling_window
+
     return rolling_factor_loadings
 
 
+def run_rolling_regressions(ticker_list, rolling_window_list):
+
+    ticker_list = ticker_list.upper().split()
+
+    out_df = pd.DataFrame(columns=['a', 'b', 'c', 'd', 'e'])
+
+    for ticker in ticker_list:
+
+        for rolling_window in rolling_window_list:
+
+            df = get_rolling_factor_loadings(ticker, rolling_window)
+
+            if out_df.empty:
+                out_df.columns = df.columns
+
+            out_df = pd.concat([out_df, df])
+
+    out_df.to_csv('rolling_regressions_output.csv')
+
+
+rolling_window_list = [60, 120, 250]
+
 if __name__ == '__main__':
     run_whole_sample_regressions(ticker_list)
+    run_rolling_regressions(ticker_list, rolling_window_list)
