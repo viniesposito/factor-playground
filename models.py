@@ -1,10 +1,10 @@
-import pandas as pd
-import pickle
-
-import statsmodels.api as sm
-from statsmodels.regression.rolling import RollingOLS
-
+from sklearn.decomposition import PCA
 from data import ticker_list
+from statsmodels.regression.rolling import RollingOLS
+import statsmodels.api as sm
+import pickle
+import pandas as pd
+import numpy as np
 
 
 def get_stock_return(ticker):
@@ -115,8 +115,40 @@ def run_rolling_regressions(ticker_list, rolling_window_list):
     out_df.to_csv('rolling_regressions_output.csv')
 
 
+def run_rolling_PCA(n_components, rolling_window):
+
+    df = pd.read_csv('factors.csv', parse_dates=[0], index_col=[0])
+
+    max_ = df.shape[0] - rolling_window
+
+    pca = PCA(n_components=n_components)
+
+    array = np.empty([0, n_components])
+
+    for i in range(max_):
+        rolling_df = df.iloc[i:(i+rolling_window), :]
+
+        pca.fit(rolling_df)
+
+        array = np.concatenate(
+            (array, pca.explained_variance_ratio_.reshape(1, n_components)))
+
+    var_explained_df = pd.DataFrame(array, columns=[f'PCA{i}' for i in range(
+        1, n_components+1)], index=df.index[rolling_window:])
+
+    var_explained_df['other'] = 1 - var_explained_df.sum(axis=1)
+
+    var_explained_df.index.name = 'Dates'
+
+    var_explained_df = pd.melt(
+        var_explained_df.reset_index(), id_vars=['Dates'])
+
+    var_explained_df.to_csv('rolling_pca_var_explained.csv')
+
+
 rolling_window_list = [60, 120, 250]
 
 if __name__ == '__main__':
-    run_whole_sample_regressions(ticker_list)
-    run_rolling_regressions(ticker_list, rolling_window_list)
+    # run_whole_sample_regressions(ticker_list)
+    # run_rolling_regressions(ticker_list, rolling_window_list)
+    run_rolling_PCA(5, 60)

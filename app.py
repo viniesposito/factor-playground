@@ -20,8 +20,75 @@ server = app.server
 
 app.title = 'Factor Playground'
 
+# Factor correlation heatmap
+
+factors_df = pd.read_csv('factors.csv', parse_dates=[0], index_col=[0])
+
+factor_corr_heatmap = px.imshow(factors_df.corr())
+
+factor_corr_heatmap.update_layout(title={
+    'text': 'Factor correlation',
+    'y': 0.95,
+    'x': 0.5,
+    'xanchor': 'center',
+    'yanchor': 'top'
+}
+)
+
+factor_corr_heatmap.layout.coloraxis.showscale = False
+
+# PCA explained variance over time
+
+pca_df = pd.read_csv('rolling_pca_var_explained.csv',
+                     parse_dates=[0])
+
+pca_plot = px.area(pca_df, x='Dates', y='value', color='variable',
+                   title='Share of variance explained by each principle component',
+                   labels={'Dates': '',
+                           'value': '',
+                           'variable': ''})
+
+pca_plot.update_layout(legend=dict(
+    orientation="h",
+    yanchor="bottom",
+    y=0.01,
+    xanchor="center",
+    x=0.5,
+    font=dict(
+        size=7
+
+    )))
+
+# Layout begins
+
 app.layout = html.Div(children=[
     html.H1(children='Factor Playground'),
+
+    html.Div([
+        html.Div([
+            dcc.Loading(
+                id="loading-3",
+                type="default",
+                children=html.Div(dcc.Graph(
+                    id='factor-correlation-heatmap',
+                    figure=factor_corr_heatmap
+                ))
+            ),
+        ], className='five columns'),
+        html.Div([
+            dcc.Loading(
+                id="loading-4",
+                type="default",
+                children=html.Div(dcc.Graph(
+                    id='pca-plot',
+                    figure=pca_plot
+                ))
+            ),
+        ], className='seven columns')
+    ],
+        className='row'),
+
+    html.Br(),
 
     html.Div(children='''
         Visualize how your favorite stock's returns can be decomposed into risk factors.
@@ -69,7 +136,7 @@ app.layout = html.Div(children=[
         ))
 
 ],
-    style={'width': '70%', 'margin': 'auto'}
+    style={'width': '75%', 'margin': 'auto'}
 )
 
 
