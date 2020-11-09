@@ -8,6 +8,7 @@ from dash.exceptions import PreventUpdate
 import plotly.express as px
 
 import pandas as pd
+import datetime
 
 from data import ticker_list
 from models import rolling_window_list
@@ -20,30 +21,44 @@ server = app.server
 
 app.title = 'Factor Playground'
 
+factors_df = pd.read_csv('factors.csv', parse_dates=[0], index_col=[0])
+whole_sample_regressions_df = pd.read_csv(
+    'whole_sample_regressions_output.csv', index_col=[0])
+rolling_regressions_df = pd.read_csv(
+    'rolling_regressions_output.csv', index_col=[0])
+pca_df = pd.read_csv('rolling_pca_var_explained.csv',
+                     index_col=[0])
+macro_df = pd.read_csv('macro_data.csv', index_col=[0])
+
+# Helper functions
+
+
+def plotly_chart_title(title):
+
+    title = dict(
+        text=title,
+        x=0.5,
+        y=0.95,
+        xanchor='center',
+        yanchor='top'
+    )
+
+    return title
+
 # Factor correlation heatmap
 
-factors_df = pd.read_csv('factors.csv', parse_dates=[0], index_col=[0])
 
 factor_corr_heatmap = px.imshow(factors_df.corr())
 
-factor_corr_heatmap.update_layout(title={
-    'text': 'Factor correlation',
-    'y': 0.95,
-    'x': 0.5,
-    'xanchor': 'center',
-    'yanchor': 'top'
-}
+factor_corr_heatmap.update_layout(
+    title=plotly_chart_title('Factor correlation')
 )
 
 factor_corr_heatmap.layout.coloraxis.showscale = False
 
 # PCA explained variance over time
 
-pca_df = pd.read_csv('rolling_pca_var_explained.csv',
-                     parse_dates=[0])
-
 pca_plot = px.area(pca_df, x='Dates', y='value', color='variable',
-                   title='Share of variance explained by each principle component',
                    labels={'Dates': '',
                            'value': '',
                            'variable': ''})
@@ -56,13 +71,38 @@ pca_plot.update_layout(legend=dict(
     x=0.5,
     font=dict(
         size=7
-
-    )))
+    )),
+    title=plotly_chart_title(
+        'Share of variance explained by each principle component'
+)
+)
 
 # Layout begins
 
 app.layout = html.Div(children=[
     html.H1(children='Factor Playground'),
+
+    html.Br(),
+
+    html.Div(["Choose a starting year ",
+              dcc.Slider(
+                  id='start-year-slider',
+                  min=min(factors_df.index).year,
+                  max=max(factors_df.index).year,
+                  value=2005,
+                  marks={
+                      i: str(i) for i in factors_df.index.year.unique().values.tolist()},
+                  step=None
+              )]
+             ),
+
+    dcc.Loading(
+        id="loading-factor-performance",
+        type="default",
+        children=html.Div(dcc.Graph(
+            id='factor-performance'
+        )
+        )),
 
     html.Div([
         html.Div([
@@ -135,18 +175,51 @@ app.layout = html.Div(children=[
         )
         ))
 
-],
-    style={'width': '75%', 'margin': 'auto'}
+]
 )
+
+
+@app.callback(
+    Output('factor-performance', 'figure'),
+    [Input('start-year-slider', 'value')]
+)
+def update_factor_performance_graph(year):
+
+    min_date = min(factors_df.index)
+
+    new_date = datetime.datetime(year, 1, 1)
+
+    df = factors_df.copy()
+
+    if new_date > min_date:
+        df = df.loc[new_date:]
+
+    df = (1+df).cumprod().reset_index()
+
+    df = pd.melt(df, id_vars=df.columns[0])
+
+    fig = px.line(
+        df, x=df.columns[0], y='value', color='variable',
+        labels={
+            df.columns[0]: '',
+            'value': '',
+            'variable': 'Factors'
+        }
+    )
+
+    fig.update_layout(title=plotly_chart_title('Factor cumulative performance')
+                      )
+
+    return fig
 
 
 @ app.callback(
     Output('whole-sample-factor-loadings', 'figure'),
     [Input('ticker-dropdown', 'value')]
 )
-def update_graph(ticker):
+def update_whole_sample_regressions_graph(ticker):
 
-    df = pd.read_csv('whole_sample_regressions_output.csv', index_col=[0])
+    df = whole_sample_regressions_df.copy()
 
     df = df[df['ticker'] == ticker].drop('ticker', axis=1)
 
@@ -170,14 +243,8 @@ def update_graph(ticker):
         }
     )
 
-    fig.update_layout(title={
-        'text': title,
-        'y': 0.95,
-        'x': 0.5,
-        'xanchor': 'center',
-        'yanchor': 'top'
-    }
-    )
+    fig.update_layout(title=plotly_chart_title(title)
+                      )
 
     return fig
 
@@ -190,7 +257,7 @@ def update_graph(ticker):
 )
 def update_rolling_factors(ticker, window):
 
-    df = pd.read_csv('rolling_regressions_output.csv', index_col=[0])
+    df = rolling_regressions_df.copy()
 
     condition = (df['ticker'] == ticker) & (df['window_size'] == window)
 
@@ -207,14 +274,8 @@ def update_rolling_factors(ticker, window):
                         'variable': 'Factors'
                   })
 
-    fig.update_layout(title={
-        'text': title,
-        'y': 0.95,
-        'x': 0.5,
-        'xanchor': 'center',
-        'yanchor': 'top'
-    }
-    )
+    fig.update_layout(title=plotly_chart_title(title)
+                      )
 
     return fig
 

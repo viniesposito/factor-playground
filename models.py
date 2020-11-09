@@ -149,6 +149,6 @@ def run_rolling_PCA(n_components, rolling_window):
 rolling_window_list = [60, 120, 250]
 
 if __name__ == '__main__':
-    # run_whole_sample_regressions(ticker_list)
-    # run_rolling_regressions(ticker_list, rolling_window_list)
-    run_rolling_PCA(5, 60)
+    run_whole_sample_regressions(ticker_list)
+    run_rolling_regressions(ticker_list, rolling_window_list)
+    run_rolling_PCA(5, 250)

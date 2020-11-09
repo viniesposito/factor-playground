@@ -1,7 +1,9 @@
 import pandas as pd
 import pickle
+import datetime
 
 import yfinance as yf
+import pandas_datareader as pdr
 
 
 def get_data_from_ken_french(url):
@@ -34,6 +36,8 @@ def get_factor_data():
 
     df = ff_df.join(aqr_df, how='inner')
 
+    df.index.name = 'Dates'
+
     df.to_csv('factors.csv')
 
 
@@ -63,9 +67,21 @@ def get_stock_metadata(tickers):
     outfile.close()
 
 
+def get_macro_data():
+
+    start = datetime.datetime(1980, 5, 1)
+    end = datetime.datetime(2020, 6, 1)
+
+    df = pdr.DataReader(['DFII10', 'T10YIE', 'DGS10'],
+                        'fred', start=start, end=end)
+
+    df.to_csv('macro_data.csv')
+
+
 ticker_list = 'tsla msft aapl ttek blk c ko gm'
 
 if __name__ == '__main__':
     get_factor_data()
     get_stock_returns(ticker_list)
     get_stock_metadata(ticker_list)
+    get_macro_data()
