@@ -15,9 +15,7 @@ import datetime
 from data import ticker_list
 from models import rolling_window_list
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+app = dash.Dash(__name__)
 
 server = app.server
 
@@ -42,12 +40,38 @@ def plotly_chart_title(title):
     title = dict(
         text=title,
         x=0.5,
-        y=0.95,
+        # y=0.95,
         xanchor='center',
         yanchor='top'
     )
 
     return title
+
+
+def fig_update_layout(fig, title='Bruh write a title'):
+
+    fig.update_layout(
+        title=plotly_chart_title(title),
+        paper_bgcolor='rgba(0, 0, 0, 0)',
+        plot_bgcolor='rgba(252, 250, 242, 0.4)',
+        legend=dict(
+            bgcolor='rgba(252, 250, 242, 0.2)',
+            borderwidth=1,
+            bordercolor='rgba(50, 50, 50, 0.5)'
+        ),
+        xaxis=dict(
+            linecolor='rgba(50, 50, 50, 0.5)',
+            linewidth=1,
+            mirror=True,
+            showline=True
+        ),
+        yaxis=dict(
+            linecolor='rgba(50, 50, 50, 0.5)',
+            linewidth=1,
+            mirror=True,
+            showline=True
+        )
+    )
 
 
 macro_var_dict = dict(
@@ -62,11 +86,10 @@ macro_var_dict = dict(
 factor_corr_heatmap = px.imshow(
     factors_df.corr(), color_continuous_scale='RdBu_r')
 
-factor_corr_heatmap.update_layout(
-    title=plotly_chart_title('Cross-factor correlation')
-)
+fig_update_layout(factor_corr_heatmap, title='Cross-factor correlation')
 
 factor_corr_heatmap.layout.coloraxis.showscale = False
+
 
 # Factor and macro variable correlation
 
@@ -94,9 +117,13 @@ def make_factor_macro_correlations_plot():
             'index': ''
         })
 
+    fig_update_layout(fig, title='Factor correlation to macro variables')
+
     fig.update_layout(
-        title=plotly_chart_title('Factor correlation to macro variables'),
-        legend=dict(orientation="h")
+        legend=dict(
+            orientation="h",
+            x=0.1
+        )
     )
 
     return fig
@@ -128,9 +155,27 @@ factor_macro_correlations_plot = make_factor_macro_correlations_plot()
 # Layout begins
 
 app.layout = html.Div(children=[
-    html.H1(children='Factor Playground'),
+
+    html.Div(children=[
+        html.Div(html.Img(src=app.get_asset_url('betahat.png'),
+                          style={'height': '100%', 'width': '100%'}), className='one columns'),
+        html.Div(html.H1(children='Factor Playground'),
+                 className='eleven columns')
+    ], className='row'),
+
+    html.Div(children=[
+        '''
+            This interactive dashboard allows you to play with equity factor performance using solely publicly available data.
+        ''',
+        html.Br(),
+        '''
+            Factor data is from Ken French's Data Library and AQR Capital Management, macro data is from FRED, and stock data is from Yahoo! Finance.
+        '''
+    ]),
 
     html.Br(),
+
+    html.H4('Explore equity factor dynamics'),
 
     html.Div(children=[
         html.Div(["Choose a starting year:",
@@ -156,7 +201,7 @@ app.layout = html.Div(children=[
                       ],
                       multi=True
                   )], className='six columns')
-    ], style={'marginBottom': '4em'}),
+    ], style={'marginBottom': '1em'}),
 
     html.Br(),
 
@@ -167,6 +212,8 @@ app.layout = html.Div(children=[
             id='factor-performance'
         )
         )),
+
+    # html.Br(),
 
     html.Div([
         html.Div([
@@ -194,6 +241,8 @@ app.layout = html.Div(children=[
 
     html.Br(),
 
+    html.H4('Pick a stock!'),
+
     html.Div(children='''
         Visualize how your favorite stock's returns can be decomposed into risk factors.
     '''),
@@ -218,14 +267,15 @@ app.layout = html.Div(children=[
         ))
     ),
 
-    html.Br(),
+    # html.Br(),
 
     html.Div(["Choose an estimation window (business days): ",
               dcc.Slider(
                   id='rolling-window-slider',
                   min=min(rolling_window_list),
                   max=max(rolling_window_list),
-                  value=rolling_window_list[int(len(rolling_window_list)/2)],
+                  value=rolling_window_list[int(
+                      len(rolling_window_list)/2)],
                   marks={i: str(i) for i in rolling_window_list},
                   step=None
               )], style={'width': '40%'}
@@ -293,9 +343,7 @@ def update_factor_performance_graph(year, macro_vars):
                 secondary_y=True
             )
 
-    fig.update_layout(
-        title=plotly_chart_title('Factor cumulative performance')
-    )
+    fig_update_layout(fig, title='Factor cumulative performance')
 
     return fig
 
@@ -330,8 +378,7 @@ def update_whole_sample_regressions_graph(ticker):
         }
     )
 
-    fig.update_layout(title=plotly_chart_title(title)
-                      )
+    fig_update_layout(fig, title=title)
 
     return fig
 
@@ -356,17 +403,16 @@ def update_rolling_factors(ticker, window):
 
     fig = px.line(df, x='index', y='value', color='variable',
                   labels={
-                        'index': '',
-                        'value': 'Factor loading',
-                        'variable': 'Factors'
+                      'index': '',
+                      'value': 'Factor loading',
+                      'variable': 'Factors'
                   })
 
-    fig.update_layout(title=plotly_chart_title(title)
-                      )
+    fig_update_layout(fig, title=title)
 
     return fig
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
-    # app.run_server()
+    # app.run_server(debug=True)
+    app.run_server()

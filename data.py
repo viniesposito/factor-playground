@@ -70,7 +70,7 @@ def get_stock_metadata(tickers):
 def get_macro_data():
 
     start = datetime.datetime(1980, 5, 1)
-    end = datetime.datetime(2020, 6, 1)
+    end = datetime.datetime(2020, 12, 1)
 
     df = pdr.DataReader(['DFII10', 'T10YIE', 'DGS10'],
                         'fred', start=start, end=end)
