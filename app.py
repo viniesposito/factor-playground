@@ -158,10 +158,14 @@ app.layout = html.Div(children=[
 
     html.Div(children=[
         html.Div(html.Img(src=app.get_asset_url('betahat.png'),
-                          style={'height': '100%', 'width': '100%'}), className='one columns'),
+                          style={'height': '50px', 'width': 'auto'}), className='one columns'),
         html.Div(html.H1(children='Factor Playground'),
-                 className='eleven columns')
-    ], className='row'),
+                 style={'font-size': '50px', 'text-align': 'center'}, className='ten columns'),
+        html.Div(html.A(html.Button('About', style={'height': '50px', 'width': 'auto'}), href='/'),
+                 className='one columns')
+    ], className='row flex-display'),
+
+    html.Br(),
 
     html.Div(children=[
         '''
@@ -414,5 +418,5 @@ def update_rolling_factors(ticker, window):
 
 
 if __name__ == '__main__':
-    # app.run_server(debug=True)
-    app.run_server()
+    app.run_server(debug=True)
+    # app.run_server()
