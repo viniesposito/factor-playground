@@ -205,7 +205,7 @@ app.layout = html.Div(children=[
                       ],
                       multi=True
                   )], className='six columns')
-    ], style={'marginBottom': '1em'}),
+    ], style={'marginBottom': '2em'}),
 
     html.Br(),
 
