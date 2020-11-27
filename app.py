@@ -12,7 +12,7 @@ from plotly.subplots import make_subplots
 import pandas as pd
 import datetime
 
-from data import ticker_list
+from data import ticker_list, DATA_PATH
 from models import rolling_window_list
 
 app = dash.Dash(__name__)
@@ -23,14 +23,16 @@ app.title = 'Factor Playground'
 
 # Reading in data
 
-factors_df = pd.read_csv('factors.csv', parse_dates=[0], index_col=[0])
+factors_df = pd.read_csv(DATA_PATH + 'factors.csv',
+                         parse_dates=[0], index_col=[0])
 whole_sample_regressions_df = pd.read_csv(
-    'whole_sample_regressions_output.csv', index_col=[0])
+    DATA_PATH + 'whole_sample_regressions_output.csv', index_col=[0])
 rolling_regressions_df = pd.read_csv(
-    'rolling_regressions_output.csv', index_col=[0])
-pca_df = pd.read_csv('rolling_pca_var_explained.csv',
+    DATA_PATH + 'rolling_regressions_output.csv', index_col=[0])
+pca_df = pd.read_csv(DATA_PATH + 'rolling_pca_var_explained.csv',
                      index_col=[0])
-macro_df = pd.read_csv('macro_data.csv', parse_dates=[0], index_col=[0])
+macro_df = pd.read_csv(DATA_PATH + 'macro_data.csv',
+                       parse_dates=[0], index_col=[0])
 
 # Helper functions and dicts
 
@@ -161,7 +163,7 @@ app.layout = html.Div(children=[
                           style={'height': '50px', 'width': 'auto'}), className='one columns'),
         html.Div(html.H1(children='Factor Playground'),
                  style={'font-size': '50px', 'text-align': 'center'}, className='ten columns'),
-        html.Div(html.A(html.Button('About', style={'height': '50px', 'width': 'auto'}), href='/'),
+        html.Div(html.A(html.Button('Code', style={'height': '50px', 'width': 'auto'}), href='https://github.com/viniesposito/factor-playground'),
                  className='one columns')
     ], className='row flex-display'),
 

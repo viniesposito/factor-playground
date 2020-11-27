@@ -5,6 +5,8 @@ import datetime
 import yfinance as yf
 import pandas_datareader as pdr
 
+DATA_PATH = 'data/'
+
 
 def get_data_from_ken_french(url):
     return pd.read_csv(url, compression='zip', skiprows=6, parse_dates=[0], index_col=[0])
@@ -38,14 +40,14 @@ def get_factor_data():
 
     df.index.name = 'Dates'
 
-    df.to_csv('factors.csv')
+    df.to_csv(DATA_PATH + 'factors.csv')
 
 
 def get_stock_returns(tickers):
 
     df = yf.download(tickers=tickers, period='max')['Adj Close'].pct_change()
 
-    df.to_csv('stocks.csv')
+    df.to_csv(DATA_PATH + 'stocks.csv')
 
 
 def get_stock_metadata(tickers):
@@ -58,7 +60,7 @@ def get_stock_metadata(tickers):
 
         out[ticker.ticker] = ticker.info
 
-    filename = 'stock_metadata'
+    filename = DATA_PATH + 'stock_metadata'
 
     outfile = open(filename, 'wb')
 
@@ -75,7 +77,7 @@ def get_macro_data():
     df = pdr.DataReader(['DFII10', 'T10YIE', 'DGS10'],
                         'fred', start=start, end=end)
 
-    df.to_csv('macro_data.csv')
+    df.to_csv(DATA_PATH + 'macro_data.csv')
 
 
 ticker_list = 'tsla msft aapl ttek blk c ko gm'

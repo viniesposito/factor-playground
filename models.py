@@ -1,5 +1,5 @@
 from sklearn.decomposition import PCA
-from data import ticker_list
+from data import ticker_list, DATA_PATH
 from statsmodels.regression.rolling import RollingOLS
 import statsmodels.api as sm
 import pickle
@@ -9,13 +9,13 @@ import numpy as np
 
 def get_stock_return(ticker):
 
-    return pd.read_csv('stocks.csv', parse_dates=[
+    return pd.read_csv(DATA_PATH + 'stocks.csv', parse_dates=[
         0], index_col=[0])[[ticker]].dropna()
 
 
 def get_stock_long_name(ticker):
 
-    infile = open('stock_metadata', 'rb')
+    infile = open(DATA_PATH + 'stock_metadata', 'rb')
 
     data = pickle.load(infile)
 
@@ -26,7 +26,7 @@ def get_stock_long_name(ticker):
 
 def prep_data_for_regression(ticker, stock):
 
-    df = pd.read_csv('factors.csv', parse_dates=[0], index_col=[0])
+    df = pd.read_csv(DATA_PATH + 'factors.csv', parse_dates=[0], index_col=[0])
 
     returns = get_stock_return(ticker)
 
@@ -73,7 +73,7 @@ def run_whole_sample_regressions(ticker_list):
 
         out_df = pd.concat([out_df, data])
 
-    out_df.to_csv('whole_sample_regressions_output.csv')
+    out_df.to_csv(DATA_PATH + 'whole_sample_regressions_output.csv')
 
 
 def get_rolling_factor_loadings(ticker, rolling_window):
@@ -112,7 +112,7 @@ def run_rolling_regressions(ticker_list, rolling_window_list):
 
             out_df = pd.concat([out_df, df])
 
-    out_df.to_csv('rolling_regressions_output.csv')
+    out_df.to_csv(DATA_PATH + 'rolling_regressions_output.csv')
 
 
 def run_rolling_PCA(n_components, rolling_window):
@@ -143,7 +143,7 @@ def run_rolling_PCA(n_components, rolling_window):
     var_explained_df = pd.melt(
         var_explained_df.reset_index(), id_vars=['Dates'])
 
-    var_explained_df.to_csv('rolling_pca_var_explained.csv')
+    var_explained_df.to_csv(DATA_PATH + 'rolling_pca_var_explained.csv')
 
 
 rolling_window_list = [60, 120, 250]
