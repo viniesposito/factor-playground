@@ -54,6 +54,10 @@ def fig_update_layout(fig, title='Bruh write a title'):
 
     fig.update_layout(
         title=plotly_chart_title(title),
+        font=dict(
+            family='Oswald, sans-serif',
+            size=16
+        ),
         paper_bgcolor='rgba(0, 0, 0, 0)',
         plot_bgcolor='rgba(252, 250, 242, 0.4)',
         legend=dict(
@@ -207,7 +211,7 @@ app.layout = html.Div(children=[
                       ],
                       multi=True
                   )], className='six columns')
-    ], style={'marginBottom': '2em'}),
+    ], style={'marginBottom': '3.5em'}),
 
     html.Br(),
 

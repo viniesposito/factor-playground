@@ -32,6 +32,7 @@
     z-index: 1002;
 }*/
 
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500&family=Source+Serif+Pro&display=swap');
 
 /* Grid
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
@@ -130,11 +131,13 @@
     margin-left: 5%;
     margin-right: 5%;
     background-color:rgb(251, 251, 242)}
+
   body {
+    font-family: 'Oswald', serif;
     font-size: 1.5em; /* currently ems cause chrome bug misinterpreting rems on body element */
     line-height: 1.6;
-    font-weight: 400;
-    font-family: "Open Sans", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    /* font-weight: 400; */
+    /* font-family: "Open Sans", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif; */
     color: rgb(50, 50, 50); }
   
   
@@ -160,7 +163,8 @@
         font-weight:200;}
 
   p {
-    margin-top: 0; }
+    margin-top: 0; 
+  }
   
   
   /* Blockquotes
